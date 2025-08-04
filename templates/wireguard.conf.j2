@@ -2,6 +2,12 @@
 Address = {{ wireguard_address }}
 PrivateKey = {{ wireguard_private_key }}
 ListenPort = {{ wireguard_port }}
+{% if wireguard_postup is defined and wireguard_postup != "" %}
+PostUp = {{ wireguard_postup }}
+{% endif %}
+{% if wireguard_postdown is defined and wireguard_postdown != "" %}
+PostDown = {{ wireguard_postdown }}
+{% endif %}
 
 [Peer]
 {% if wireguard_peer_endpoint is defined and wireguard_peer_endpoint != "" %}

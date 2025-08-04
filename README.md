@@ -40,6 +40,8 @@ A simple and opinionated Ansible role for configuring WireGuard point-to-point t
 | `wireguard_port` | UDP listen port | `51820` |
 | `wireguard_peer_keepalive` | Keepalive interval in seconds | `25` |
 | `wireguard_peer_endpoint` | Peer endpoint (hostname:port) | `""` (unset) |
+| `wireguard_postup` | PostUp command to execute | `""` (unset) |
+| `wireguard_postdown` | PostDown command to execute | `""` (unset) |
 
 **Note:** The `wireguard_peer_endpoint` is optional. When unset, the peer will only listen for inbound connections. When set, the peer will actively connect to the specified endpoint.
 

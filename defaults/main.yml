@@ -4,6 +4,10 @@ wireguard_interface: wg0
 wireguard_port: 51820
 wireguard_peer_keepalive: 25
 
+# Optional PostUp/PostDown commands
+wireguard_postup: ""
+wireguard_postdown: ""
+
 wireguard_address: ""
 wireguard_private_key: ""
 wireguard_peer_public_key: ""
