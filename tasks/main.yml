@@ -1,0 +1,22 @@
+---
+- name: Install WireGuard packages
+  package:
+    name:
+      - wireguard
+      - wireguard-tools
+    state: present
+
+- name: Create WireGuard configuration file
+  template:
+    src: wireguard.conf.j2
+    dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
+    mode: '0600'
+    owner: root
+    group: root
+  notify: restart wireguard
+
+- name: Enable and start WireGuard service
+  systemd:
+    name: "wg-quick@{{ wireguard_interface }}"
+    enabled: yes
+    state: started
