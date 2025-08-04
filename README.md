@@ -8,7 +8,6 @@ A simple and opinionated Ansible role for configuring WireGuard point-to-point t
 - Creates WireGuard configuration files with proper permissions
 - Manages WireGuard systemd services
 - Supports both inbound-only and outbound peer configurations
-- Simple template-based configuration
 
 ## Limitations
 
