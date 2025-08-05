@@ -16,10 +16,18 @@ PostUp = {{ item.command }}
 PostDown = {{ item.command }}
 {% endfor %}
 
-[Peer]
-{% if wireguard_peer_endpoint | default(false) %}
-Endpoint = {{ wireguard_peer_endpoint }}
+{% for peer in wireguard_peers %}
+{% if peer.name | default(false) %}
+# {{ peer.name }}
 {% endif %}
-PublicKey = {{ wireguard_peer_public_key }}
-AllowedIPs = {{ wireguard_peer_allowed_ips }}
-PersistentKeepalive = {{ wireguard_peer_keepalive }}
+[Peer]
+PublicKey = {{ peer.public_key }}
+AllowedIPs = {{ peer.allowed_ips }}
+{% if peer.endpoint | default(false) %}
+Endpoint = {{ peer.endpoint }}
+{% endif %}
+{% if peer.keepalive | default(wireguard_peer_keepalive) %}
+PersistentKeepalive = {{ peer.keepalive | default(wireguard_peer_keepalive) }}
+{% endif %}
+
+{% endfor %}

@@ -8,11 +8,11 @@ A simple and opinionated Ansible role for configuring WireGuard point-to-point t
 - Creates WireGuard configuration files with proper permissions
 - Manages WireGuard systemd services
 - Supports both inbound-only and outbound peer configurations
+- Supports multiple peers for hub-and-spoke or mesh configurations
 
 ## Limitations
 
 - No keys are generated for you. You must provide them
-- Only a single peer can be specified, so this role is really only for connecting two servers or sites
 - No fancy DKMS or kernel modules are managed. Your kernel must support Wireguard.
 
 ## Requirements
@@ -29,8 +29,7 @@ A simple and opinionated Ansible role for configuring WireGuard point-to-point t
 |----------|-------------|---------|
 | `wireguard_address` | Interface IP address with CIDR | `"172.19.42.1/30"` |
 | `wireguard_private_key` | Private key for this interface | `"{{ vault_private_key }}"` |
-| `wireguard_peer_public_key` | Public key of the peer | `"{{ vault_peer_public_key }}"` |
-| `wireguard_peer_allowed_ips` | Allowed IPs from peer | `"172.19.42.2/32"` |
+| `wireguard_peers` | List of peer configurations | See examples below |
 
 ### Optional Variables
 
@@ -38,12 +37,24 @@ A simple and opinionated Ansible role for configuring WireGuard point-to-point t
 |----------|-------------|---------|
 | `wireguard_interface` | Interface name | `wg0` |
 | `wireguard_port` | UDP listen port | `51820` |
-| `wireguard_peer_keepalive` | Keepalive interval in seconds | `25` |
-| `wireguard_peer_endpoint` | Peer endpoint (hostname:port) | `""` (unset) |
+| `wireguard_peer_keepalive` | Default keepalive interval in seconds | `25` |
+| `wireguard_skip_install` | Skip package installation of `wireguard` and `wireguard-tools` | `false` |
 | `wireguard_postup` | List of PostUp commands with optional comments | `[]` (empty list) |
 | `wireguard_postdown` | List of PostDown commands with optional comments | `[]` (empty list) |
 
-**Note:** The `wireguard_peer_endpoint` is optional. When unset, the peer will only listen for inbound connections. When set, the peer will actively connect to the specified endpoint.
+### Peer Configuration
+
+Each peer in the `wireguard_peers` list supports:
+
+| Field | Description | Required | Example |
+|-------|-------------|----------|---------|
+| `public_key` | Public key of the peer | Yes | `"CLIENT_PUBLIC_KEY_HERE"` |
+| `allowed_ips` | Allowed IPs from this peer | Yes | `"10.0.0.2/32"` |
+| `name` | Optional comment for the peer | No | `"client1"` |
+| `endpoint` | Peer endpoint (hostname:port) | No | `"client.example.com:51820"` |
+| `keepalive` | Keepalive interval (overrides default) | No | `30` |
+
+**Note:** The `endpoint` is optional. When unset, the peer will only listen for inbound connections. When set, this host will actively connect to the specified endpoint.
 
 ## Example Playbooks
 
@@ -61,8 +72,10 @@ This example sets up a tunnel between two hosts:
       vars:
         wireguard_address: "10.100.0.1/30"
         wireguard_private_key: "{{ host01_private_key }}"
-        wireguard_peer_public_key: "{{ host02_public_key }}"
-        wireguard_peer_allowed_ips: "10.100.0.2/32"
+        wireguard_peers:
+          - name: "host02"
+            public_key: "{{ host02_public_key }}"
+            allowed_ips: "10.100.0.2/32"
 
 # Configure second peer (with outbound connection to host01)
 - hosts: host02.example.com
@@ -72,9 +85,11 @@ This example sets up a tunnel between two hosts:
       vars:
         wireguard_address: "10.100.0.2/30"
         wireguard_private_key: "{{ host02_private_key }}"
-        wireguard_peer_endpoint: "host01.example.com:51820"
-        wireguard_peer_public_key: "{{ host01_public_key }}"
-        wireguard_peer_allowed_ips: "10.100.0.1/32"
+        wireguard_peers:
+          - name: "host01"
+            public_key: "{{ host01_public_key }}"
+            allowed_ips: "10.100.0.1/32"
+            endpoint: "host01.example.com:51820"
         wireguard_postup:
           - comment: "Allow forwarding through WireGuard interface"
             command: "iptables -A FORWARD -i %i -j ACCEPT"

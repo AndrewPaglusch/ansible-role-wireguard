@@ -5,6 +5,7 @@
       - wireguard
       - wireguard-tools
     state: present
+  when: not wireguard_skip_install
 
 - name: Create WireGuard configuration file
   template:
