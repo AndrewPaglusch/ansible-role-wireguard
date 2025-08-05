@@ -40,8 +40,8 @@ A simple and opinionated Ansible role for configuring WireGuard point-to-point t
 | `wireguard_port` | UDP listen port | `51820` |
 | `wireguard_peer_keepalive` | Keepalive interval in seconds | `25` |
 | `wireguard_peer_endpoint` | Peer endpoint (hostname:port) | `""` (unset) |
-| `wireguard_postup` | PostUp command to execute | `""` (unset) |
-| `wireguard_postdown` | PostDown command to execute | `""` (unset) |
+| `wireguard_postup` | List of PostUp commands with optional comments | `[]` (empty list) |
+| `wireguard_postdown` | List of PostDown commands with optional comments | `[]` (empty list) |
 
 **Note:** The `wireguard_peer_endpoint` is optional. When unset, the peer will only listen for inbound connections. When set, the peer will actively connect to the specified endpoint.
 
@@ -75,6 +75,14 @@ This example sets up a tunnel between two hosts:
         wireguard_peer_endpoint: "host01.example.com:51820"
         wireguard_peer_public_key: "{{ host01_public_key }}"
         wireguard_peer_allowed_ips: "10.100.0.1/32"
+        wireguard_postup:
+          - comment: "Allow forwarding through WireGuard interface"
+            command: "iptables -A FORWARD -i %i -j ACCEPT"
+          - comment: "Enable NAT for WireGuard traffic"
+            command: "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+        wireguard_postdown:
+          - command: "iptables -D FORWARD -i %i -j ACCEPT"
+          - command: "iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE"
 ```
 
 ## Key Management

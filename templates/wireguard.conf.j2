@@ -2,15 +2,22 @@
 Address = {{ wireguard_address }}
 PrivateKey = {{ wireguard_private_key }}
 ListenPort = {{ wireguard_port }}
-{% if wireguard_postup is defined and wireguard_postup != "" %}
-PostUp = {{ wireguard_postup }}
+
+{% for item in wireguard_postup | default([]) %}
+{% if item.comment | default(false) %}
+# {{ item.comment }}
 {% endif %}
-{% if wireguard_postdown is defined and wireguard_postdown != "" %}
-PostDown = {{ wireguard_postdown }}
+PostUp = {{ item.command }}
+{% endfor %}
+{% for item in wireguard_postdown | default([]) %}
+{% if item.comment | default(false) %}
+# {{ item.comment }}
 {% endif %}
+PostDown = {{ item.command }}
+{% endfor %}
 
 [Peer]
-{% if wireguard_peer_endpoint is defined and wireguard_peer_endpoint != "" %}
+{% if wireguard_peer_endpoint | default(false) %}
 Endpoint = {{ wireguard_peer_endpoint }}
 {% endif %}
 PublicKey = {{ wireguard_peer_public_key }}
