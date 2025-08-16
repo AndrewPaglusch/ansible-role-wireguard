@@ -1,11 +1,17 @@
 ---
 - name: Install WireGuard packages
   package:
-    name:
-      - wireguard
-      - wireguard-tools
+    name: wireguard-tools
     state: present
   when: not wireguard_skip_install
+
+- name: Ensure WireGuard directory exists
+  file:
+    path: /etc/wireguard
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
 
 - name: Create WireGuard configuration file
   template:
